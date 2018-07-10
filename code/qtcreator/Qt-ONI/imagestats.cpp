@@ -379,7 +379,7 @@ void ImageStats::dumpDetail()
 
 void ImageStats::dumpResult()
 {
-    fprintf(stdout, "result: threshold: %.3f -> %lu items\n", _result.size(), _scanThreshold);
+    fprintf(stdout, "result: threshold: %.3f -> %lu items\n", _scanThreshold, _result.size());
     int count = 0;
     for (CvRect item : _result)
     {
