@@ -268,6 +268,7 @@ void MainWindow::refreshGV()
 
 void MainWindow::optionChanged(bool state)
 {
+    Q_UNUSED(state);
 //    qDebug() << "MainWindow::optionChanged: state: " << state;
 #if 0
     QObject* object = sender();
