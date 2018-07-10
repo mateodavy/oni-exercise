@@ -56,6 +56,7 @@
 #define HISTO_SIZE      512
 //#define HISTO_SIZE      256
 
+#define SCAN_SOLUTIONS_MAX      512
 #define SCAN_THRESHOLD_DEFAULT  0.200f
 
 #define KERNEL_SIZE     7

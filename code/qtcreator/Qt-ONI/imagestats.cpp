@@ -195,7 +195,7 @@ Mat ImageStats::norm2(const Mat& image)
 
 void ImageStats::scan()
 {
-    int limit = 16;
+    int limit = SCAN_SOLUTIONS_MAX;
     _result.clear();
     for (int y = 0; y < _image.rows; y++)
     {
@@ -216,15 +216,16 @@ void ImageStats::scan()
                     if (isFreePos(x, y))
                     {
                         // limit # of entries?
-                        _result.push_back(rect);
+                        if (--limit >= 0)
+                            _result.push_back(rect);
                     }
                 }
             }
             else
             {
-                if (--limit >= 0)
+                if (false)
                 {
-//                    fprintf(stderr, "scan: invalid pos: %d,%d\n", y, x);
+                    fprintf(stderr, "scan: invalid pos: %d,%d\n", y, x);
                 }
             }
         }
