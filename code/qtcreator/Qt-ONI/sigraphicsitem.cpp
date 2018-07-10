@@ -132,7 +132,7 @@ void SIGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 
     // get main window and associated data
     MainWindow* main = MainWindow::getInstance();
-    oni::ScanImage::ImageType imageType = main->getViewImageType();
+//    oni::ScanImage::ImageType imageType = main->getViewImageType();
 //    oni::ScanImage::ImageType imageType = oni::ScanImage::IMAGE_TYPE_CMAP;
 //    qDebug() << "SIGraphicsItem::paint: I: " << imageType << endl;
     bool resultViewEnabled = main->isViewOptionEnabled(MainWindow::UI_VIEW_OPTION_RESULT);
