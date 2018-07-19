@@ -10,6 +10,7 @@ SIGraphicScene::SIGraphicScene()
 
 void SIGraphicScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
+    Q_UNUSED(event);
 //    const QPointF& pos = event->pos();
 //    qDebug() << "SIGraphicScene: mouse press  : " << pos.x() << ", " << pos.y();
 
@@ -18,6 +19,7 @@ void SIGraphicScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
 
 void SIGraphicScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
+    Q_UNUSED(event);
 //    const QPointF& pos = event->pos();
 //    qDebug() << "SIGraphicScene: mouse release: " << pos.x() << ", " << pos.y();
 
@@ -54,7 +56,8 @@ void SIGraphicScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
 void SIGraphicScene::hoverMoveEvent(QGraphicsSceneMouseEvent* event)
 {
-    const QPointF& pos = event->pos();
+    Q_UNUSED(event);
+//    const QPointF& pos = event->pos();
 //    qDebug() << "SIGraphicScene: mouse hover: " << pos.x() << ", " << pos.y();
 
 }
