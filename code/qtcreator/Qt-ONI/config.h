@@ -62,8 +62,8 @@
 #define SCAN_SOLUTIONS_MAX          512
 #define SCAN_THRESHOLD_DEFAULT      0.200f
 
-#define IMAGE_NOISE_LEVEL_DEFAULT   0.1f
-#define IMAGE_NOISE_SIGMA_DEFAULT   0.1f
+#define IMAGE_NOISE_LEVEL_DEFAULT   0.10f
+#define IMAGE_NOISE_SIGMA_DEFAULT   0.01f
 
 //#define DB_20_LOG(v)    (20.0f * logf((v)))
 #define DB_20_LOG(v)    (20.0f * log10((v)))
