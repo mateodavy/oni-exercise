@@ -266,10 +266,10 @@ void ScanImage::rebuildImages()
 void ScanImage::backupImage()
 {
     // copy current: HOLD -> TEMP
-    _images[IMAGE_TYPE_TEMP] = _images[IMAGE_TYPE_PROC];
+    _images[IMAGE_TYPE_TEMP] = _images[IMAGE_TYPE_PROC].clone();
 
     // copy current: PROC -> HOLD
-    _images[IMAGE_TYPE_LAST] = _images[IMAGE_TYPE_PROC];
+    _images[IMAGE_TYPE_LAST] = _images[IMAGE_TYPE_PROC].clone();
 }
 
 
