@@ -43,8 +43,8 @@ void ScanImage::blur()
 //    int blurSize = KERNEL_SIZE;
     Size blurKernelSize(blurSize, blurSize);
 
-    cv::blur(source, target, blurKernelSize, Point(-1,-1));
-//    cv::GaussianBlur(source, target, blurKernelSize, 0, 0);
+//    cv::blur(source, target, blurKernelSize, Point(-1,-1));
+    cv::GaussianBlur(source, target, blurKernelSize, 0, 0);
 //    cv::medianBlur(source, target, KERNEL_SIZE);
 //    cv::bilateralFilter(source, target, blurSize, blurSize * 2, blurSize / 2 );
 
@@ -65,7 +65,6 @@ void ScanImage::erode()
     int erosionType = MORPH_RECT;
 //    int erosion_type = MORPH_CROSS;
 //    int erosion_type = MORPH_ELLIPSE;
-
 
     Mat element = getStructuringElement( erosionType,
                                          Size(2 * erosionSize + 1, 2 * erosionSize + 1),
@@ -252,6 +251,7 @@ void ScanImage::rebuildImages()
     cv::mixChannels(&bgra,1,&abgr,1,from_to,4);
 #endif
 
+    // might want to make normalized an effect (or not normalize, just convert)
     _images[IMAGE_TYPE_NORM] = _imageStat.norm(_images[IMAGE_TYPE_PROC]).clone();
     _imageStat.stat();
 //    _imageStat.dump();

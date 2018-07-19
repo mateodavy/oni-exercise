@@ -54,9 +54,9 @@ public:
 
         bool        load(QString path);
 
+        ImageStats& getStats()      { return _imageStat; }
         Mat&        getImage(ImageType type = IMAGE_TYPE_PROC);
         string      getImageTypeString(int type);
-        ImageStats& getStats()      { return _imageStat; }
 
         void        dump();
         void        dump(Mat& image);
