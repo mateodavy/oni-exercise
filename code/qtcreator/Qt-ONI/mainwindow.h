@@ -38,7 +38,8 @@ static  MainWindow*     getInstance();
         UI_VIEW_OPTION_NONE         = 0x0000,
         UI_VIEW_OPTION_RESULT       = 0x0001,
         UI_VIEW_OPTION_CURSOR       = 0x0002,
-        UI_VIEW_OPTION_HISTOGRAM    = 0x0004
+        UI_VIEW_OPTION_VALUES       = 0x0004,
+        UI_VIEW_OPTION_HISTOGRAM    = 0x0008
     } UIViewOption;
 
     bool                        isViewOptionEnabled(UIViewOption option);
@@ -64,7 +65,8 @@ public Q_SLOTS:
     void    erode();
     void    reset();
     void    threshold();
-    void    setThreshold();
+    void    setThresholdLevel();
+    void    setNoiseLevel();
 
 protected:
 
@@ -78,6 +80,7 @@ protected:
     void    resizeEvent(QResizeEvent* event);
 
     void    refreshGV();
+
     void    setupButtons();
     void    setupTables();
     void    setupMenu();
@@ -85,6 +88,8 @@ protected:
     void    setupFileTypeActionGroup();
     void    setupGraphicScene();
     void    setupAppStatus();
+
+    bool    saveResultFile(QString& path);
 
 private:
         QActionGroup        _group;

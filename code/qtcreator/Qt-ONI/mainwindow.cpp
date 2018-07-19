@@ -51,6 +51,15 @@ void MainWindow::setCursorPos(int x, int y)
     _cursor.setTop( y - oy);
     _cursor.setWidth(KERNEL_SIZE);
     _cursor.setHeight(KERNEL_SIZE);
+
+    if (isViewOptionEnabled(UI_VIEW_OPTION_VALUES))
+    {
+        // dump image info
+//        _image.dump();
+
+        // dump image stats
+//        _image.getStats().dump();
+    }
 }
 
 QRectF MainWindow::getCursor()
@@ -64,6 +73,7 @@ bool MainWindow::isViewOptionEnabled(UIViewOption option)
     {
         case UI_VIEW_OPTION_RESULT:     return _ui->action_Result->isChecked();
         case UI_VIEW_OPTION_CURSOR:     return _ui->action_Cursor->isChecked();
+        case UI_VIEW_OPTION_VALUES:     return _ui->action_Values->isChecked();
         case UI_VIEW_OPTION_HISTOGRAM:  return _ui->action_Histogram->isChecked();
         case UI_VIEW_OPTION_NONE:
         default:
@@ -187,8 +197,10 @@ void MainWindow::setupMenu()
     addAction(_ui->action_Reset);
     connect(_ui->action_Reset, SIGNAL(triggered(bool)), this, SLOT(reset()));
 
-    addAction(_ui->action_Set_Threshold);
-    connect(_ui->action_Set_Threshold, SIGNAL(triggered(bool)), this, SLOT(setThreshold()));
+    addAction(_ui->action_Set_Threshold_Level);
+    connect(_ui->action_Set_Threshold_Level, SIGNAL(triggered(bool)), this, SLOT(setThresholdLevel()));
+    addAction(_ui->action_Set_Noise_Level);
+    connect(_ui->action_Set_Noise_Level, SIGNAL(triggered(bool)), this, SLOT(setNoiseLevel()));
 }
 
 void MainWindow::setupViewOptions()
@@ -208,6 +220,8 @@ void MainWindow::setupViewOptions()
     connect(_ui->action_Result, SIGNAL(triggered(bool)), this, SLOT(optionChanged(bool)));
     addAction(_ui->action_Cursor);
     connect(_ui->action_Cursor, SIGNAL(triggered(bool)), this, SLOT(optionChanged(bool)));
+    addAction(_ui->action_Values);
+    connect(_ui->action_Values, SIGNAL(triggered(bool)), this, SLOT(optionChanged(bool)));
     addAction(_ui->action_Histogram);
     connect(_ui->action_Histogram, SIGNAL(triggered(bool)), this, SLOT(optionChanged(bool)));
 }
@@ -221,8 +235,10 @@ void MainWindow::setupFileTypeActionGroup()
     _group.addAction(_ui->action_Cmap);
 
     _ui->action_Proc->setChecked(true);
+
     _ui->action_Cursor->setChecked(true);
     _ui->action_Result->setChecked(true);
+    _ui->action_Values->setChecked(true);
 }
 
 void MainWindow::setupGraphicScene()
@@ -311,7 +327,41 @@ void MainWindow::saveFile()
             tr("Result (*.oni);;All Files (*)"));
     if (fileName.isEmpty())
         return;
-    // else save result
+    // ensure/force extension?
+    saveResultFile(fileName);
+}
+
+bool MainWindow::saveResultFile(QString& path)
+{
+    QFile file(path);
+    // check overwrite?
+    // first line:
+    // 0,7,7,max?   - kernel size, count?
+    // make separate sections: source, stats, result, ...
+    // make PDF report (including histogram, ...)
+    //
+    if (file.open(QIODevice::ReadWrite))
+    {
+        QTextStream stream(&file);
+        stream << "#,x,y,a" << endl;
+        Result& result = _image.getStats().getResult();
+        int count = 1;
+        for (auto item : result)
+        {
+            QString line;
+            float a = 1.0f;
+            line.sprintf("%d,%d,%d,%f", count, item.x, item.y, a);
+            stream << line << endl;
+            count++;
+        }
+    }
+    else
+    {
+        return false;
+    }
+    file.flush();
+    file.close();
+    return true;
 }
 
 void MainWindow::load()
@@ -395,8 +445,14 @@ void MainWindow::threshold()
     refreshGV();
 }
 
-void MainWindow::setThreshold()
+void MainWindow::setThresholdLevel()
 {
-    _image.getStats().setThreshold();
+    _image.getStats().setThresholdLevel();
+    refreshGV();
 }
 
+void MainWindow::setNoiseLevel()
+{
+    _image.getStats().setNoiseLevel();
+    refreshGV();
+}

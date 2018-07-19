@@ -49,6 +49,9 @@
 #define UI_HISTO_OFFSET_X   -200
 #define UI_HISTO_OFFSET_Y    240
 
+#define UI_VALUE_OFFSET_X   30
+#define UI_VALUE_OFFSET_Y   15
+
 #define UI_ZOOM_SCALE   16
 #define UI_ZOOM_MARGIN  48
 
@@ -56,8 +59,14 @@
 #define HISTO_SIZE      512
 //#define HISTO_SIZE      256
 
-#define SCAN_SOLUTIONS_MAX      512
-#define SCAN_THRESHOLD_DEFAULT  0.200f
+#define SCAN_SOLUTIONS_MAX          512
+#define SCAN_THRESHOLD_DEFAULT      0.200f
+
+#define IMAGE_NOISE_LEVEL_DEFAULT   0.1f
+#define IMAGE_NOISE_SIGMA_DEFAULT   0.1f
+
+//#define DB_20_LOG(v)    (20.0f * logf((v)))
+#define DB_20_LOG(v)    (20.0f * log10((v)))
 
 #define KERNEL_SIZE     7
 

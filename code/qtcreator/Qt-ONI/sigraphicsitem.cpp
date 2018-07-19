@@ -137,7 +137,9 @@ void SIGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 //    qDebug() << "SIGraphicsItem::paint: I: " << imageType << endl;
     bool resultViewEnabled = main->isViewOptionEnabled(MainWindow::UI_VIEW_OPTION_RESULT);
     bool cursorViewEnabled = main->isViewOptionEnabled(MainWindow::UI_VIEW_OPTION_CURSOR);
+    bool valuesViewEnabled = main->isViewOptionEnabled(MainWindow::UI_VIEW_OPTION_VALUES);
     bool histogramViewEnabled = main->isViewOptionEnabled(MainWindow::UI_VIEW_OPTION_HISTOGRAM);
+
 //    qDebug() << "SIGraphicsItem::paint: C: " << cursorViewEnabled << endl;
 //    qDebug() << "SIGraphicsItem::paint: H: " << histogramViewEnabled << endl;
 
@@ -177,9 +179,10 @@ void SIGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 
     // adjust cursor - workaround for now
     _cursor = main->getCursor();
+    bool isCursorValid = validCursor(_cursor, siImage.rows, siImage.cols);
 
     // draw histo
-    bool histoOK = validCursor(_cursor, siImage.rows, siImage.cols);
+    bool histoOK = isCursorValid;
 //    qDebug() << "drawing histo: OK: " << histoOK << endl;
     if (histoOK && histogramViewEnabled)
     {
@@ -187,7 +190,7 @@ void SIGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     }
 
     // draw cursor
-    bool cursorOK = validCursor(_cursor, siImage.rows, siImage.cols);
+    bool cursorOK = isCursorValid;
 //    qDebug() << "drawing cursor: OK: " << cursorOK << endl;
     if (cursorOK && cursorViewEnabled)
     {
@@ -200,6 +203,13 @@ void SIGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     if (resultOK && resultViewEnabled)
     {
         drawResult(painter);
+    }
+
+    // draw
+    bool valuesOK = isCursorValid;
+    if (valuesOK && valuesViewEnabled)
+    {
+        drawValues(painter);
     }
 }
 
@@ -264,7 +274,7 @@ void SIGraphicsItem::drawHisto(QPainter *painter)
     painter->drawRect(rectH);
 
     int pos = 0;
-    int valuePos = int(2.0 * histScaleY * detail.value());
+    int valuePos = int(2.0 * histScaleY * detail.peakValue());
 //    fprintf(stdout, "SIGraphicsItem::drawHisto: value: %f: pos: %d\n", detail.value(), valuePos);
     for (auto item : histo)
     {
@@ -321,7 +331,7 @@ void SIGraphicsItem::drawCursor(QPainter *painter)
     // setup graphics
 //    QBrush rectCBrush(Qt::darkGray);
 //    QColor cursorColor(int(detail.color[0]), int(detail.color[1]), int(detail.color[2]));
-    float value = detail.value();
+    float value = detail.peakValue();
 //    QColor cursorColor(value, value, value);
     QColor cursorColor;
     cursorColor.setRgbF(value, value, value);
@@ -442,19 +452,83 @@ void SIGraphicsItem::drawResult(QPainter *painter)
     // result list
     Result& result = _data.getStats().getResult();
 
+    float ks2 = float(KERNEL_SIZE - 1) / 2.0f;
+
     QPen resultPen(Qt::red);
     painter->setPen(resultPen);
     QBrush resultBrush(Qt::transparent);
     painter->setBrush(resultBrush);
     for (CvRect item : result)
     {
-        float rx = UI_IMAGE_MARGIN_W + item.x;
-        float ry = UI_IMAGE_MARGIN_H + item.y;
+        float rx = UI_IMAGE_MARGIN_W + item.x - ks2;
+        float ry = UI_IMAGE_MARGIN_H + item.y - ks2;
         float rw = item.width;
         float rh = item.height;
         QRectF resultRect(rx, ry, rw, rh);
         painter->drawRect(resultRect);
+//        QPointF resultPoint(rx, ry);
+//        painter->drawPoint(resultPoint);
     }
 }
+
+void SIGraphicsItem::drawValues(QPainter *painter)
+{
+    // get cursor position
+    const QRectF& cursor = _cursor; // arg?
+
+    // cursor pos - relative to image
+    QPointF center = cursor.center();
+    int ix = int(center.x() - UI_IMAGE_MARGIN_W);
+    int iy = int(center.y() - UI_IMAGE_MARGIN_H);
+
+    // get image stats
+    ImageStats& stats = _data.getStats();
+    ImageStats::Detail detail = stats.getDetail(ix, iy);
+
+    // set graphics
+    QPen resultPen(Qt::white);
+    painter->setPen(resultPen);
+    QBrush resultBrush(Qt::blue);
+    painter->setBrush(resultBrush);
+
+    // draw lines
+    float ks = float(KERNEL_SIZE);
+    float cx = _cursor.left() + ks / 2.0;
+    float cy = _cursor.top()  + ks / 2.0;
+
+    // draw cursor position
+    QPointF textP(cx - UI_VALUE_OFFSET_X, cy - UI_VALUE_OFFSET_Y);
+    QString textS;
+    textS.sprintf("(%3d, %3d)", int(cx), int(cy));
+    painter->drawText(textP, textS);
+
+    // draw values
+    textP.setX(cx - UI_VALUE_OFFSET_X - 60);
+    textP.setY(cy - UI_VALUE_OFFSET_Y + 20);
+    textS.sprintf("noise: %.3f", stats.getNoiseSigma());
+    painter->drawText(textP, textS);
+
+    textP.setX(cx - UI_VALUE_OFFSET_X - 60);
+    textP.setY(cy - UI_VALUE_OFFSET_Y + 40);
+    textS.sprintf("peak : %.3f", detail.peakValue());
+    painter->drawText(textP, textS);
+
+    textP.setX(cx - UI_VALUE_OFFSET_X + 32);
+    textP.setY(cy - UI_VALUE_OFFSET_Y + 40);
+    textS.sprintf("%.2f dB", stats.getSNRdB(detail.peakValue()));
+    painter->drawText(textP, textS);
+
+    textP.setX(cx - UI_VALUE_OFFSET_X - 60);
+    textP.setY(cy - UI_VALUE_OFFSET_Y + 60);
+    textS.sprintf("mean: %.3f", detail.meanValue());
+    painter->drawText(textP, textS);
+
+    textP.setX(cx - UI_VALUE_OFFSET_X + 32);
+    textP.setY(cy - UI_VALUE_OFFSET_Y + 60);
+    textS.sprintf("%.2f dB", stats.getSNRdB(detail.meanValue()));
+    painter->drawText(textP, textS);
+}
+
+
 
 

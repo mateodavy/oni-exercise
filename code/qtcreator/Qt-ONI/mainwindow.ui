@@ -99,7 +99,7 @@
      <x>0</x>
      <y>0</y>
      <width>958</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -122,7 +122,7 @@
     </property>
     <widget class="QMenu" name="menuImage">
      <property name="title">
-      <string>Image</string>
+      <string>&amp;Image</string>
      </property>
      <addaction name="action_File"/>
      <addaction name="action_Last"/>
@@ -132,11 +132,12 @@
     </widget>
     <widget class="QMenu" name="menuShow">
      <property name="title">
-      <string>Show</string>
+      <string>&amp;Show</string>
      </property>
      <addaction name="action_Cursor"/>
      <addaction name="action_Histogram"/>
      <addaction name="action_Result"/>
+     <addaction name="action_Values"/>
     </widget>
     <addaction name="menuImage"/>
     <addaction name="menuShow"/>
@@ -151,7 +152,8 @@
     <addaction name="separator"/>
     <addaction name="action_Reset"/>
     <addaction name="separator"/>
-    <addaction name="action_Set_Threshold"/>
+    <addaction name="action_Set_Threshold_Level"/>
+    <addaction name="action_Set_Noise_Level"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuScan"/>
@@ -185,10 +187,10 @@
   </action>
   <action name="action_Scan">
    <property name="text">
-    <string>Sca&amp;n</string>
+    <string>Sc&amp;an</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+N</string>
+    <string>Ctrl+A</string>
    </property>
   </action>
   <action name="action_Clear">
@@ -207,7 +209,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>File</string>
+    <string>&amp;File</string>
    </property>
    <property name="shortcut">
     <string>F2</string>
@@ -221,7 +223,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Proc</string>
+    <string>&amp;Current</string>
    </property>
    <property name="shortcut">
     <string>F4</string>
@@ -232,7 +234,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Gray</string>
+    <string>&amp;Gray</string>
    </property>
    <property name="toolTip">
     <string>Gray</string>
@@ -246,7 +248,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Cmap</string>
+    <string>Color&amp;map</string>
    </property>
    <property name="shortcut">
     <string>F6</string>
@@ -260,7 +262,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Cursor</string>
+    <string>&amp;Cursor</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
@@ -271,7 +273,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Histogram</string>
+    <string>&amp;Histogram</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+H</string>
@@ -282,7 +284,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Result</string>
+    <string>&amp;Result</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+J</string>
@@ -325,7 +327,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Last</string>
+    <string>&amp;Previous</string>
    </property>
    <property name="toolTip">
     <string>Last</string>
@@ -334,12 +336,31 @@
     <string>F3</string>
    </property>
   </action>
-  <action name="action_Set_Threshold">
+  <action name="action_Set_Threshold_Level">
    <property name="text">
-    <string>Set Thres&amp;hold</string>
+    <string>Set Thres&amp;hold Level</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="action_Values">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Val&amp;ues</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+U</string>
+   </property>
+  </action>
+  <action name="action_Set_Noise_Level">
+   <property name="text">
+    <string>Set &amp;Noise Level</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>

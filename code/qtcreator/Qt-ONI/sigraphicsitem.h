@@ -44,6 +44,7 @@ protected:
     void    drawHisto(QPainter *painter);
     void    drawCursor(QPainter *painter);
     void    drawResult(QPainter *painter);
+    void    drawValues(QPainter *painter);
 
 private:
     oni::ScanImage&     _data;

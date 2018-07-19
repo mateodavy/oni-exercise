@@ -29,10 +29,11 @@ public:
 
     struct Detail
     {
-        CvPoint mouse;
+        CvPoint cursor;
         Mat     values;
-//        float   value()                 { return values.at<float>(KERNEL_SIZE, KERNEL_SIZE); }
-        float   value()                 { int kc = (KERNEL_SIZE - 1) / 2; return values.at<float>(kc, kc); }
+        float   value(int row, int col) { return values.at<float>(row, col); }
+        float   peakValue()             { int kc = (KERNEL_SIZE - 1) / 2; return values.at<float>(kc, kc); }
+        float   meanValue()             { return values.at<float>(KERNEL_SIZE, KERNEL_SIZE); }
     };
 
     Histo       getHisto()              { return _histo; }
@@ -49,16 +50,23 @@ public:
     void        dump();
     void        clear();
 
-    void        setThreshold();
+    void        setThresholdLevel();
+    void        setNoiseLevel();
+//    float       getNoiseLevel()                 { return _noiseLevel; }
+    float       getNoiseSigma()                 { return _noiseSigma; }
 //    void        setThreshold(int x, int y);
     bool        isValidPos(int x, int y);
     bool        isFreePos(int x, int y);
     CvRect      getRectXY(int x, int y);
 
+//    float       getSNRdB(float value)           { float noise = getNoiseLevel(); return (noise > 0.0f) ? DB_20_LOG(value / noise) : 0.0f; }
+    float       getSNRdB(float value)           { float sigma = getNoiseSigma(); return (sigma > 0.0f) ? DB_20_LOG(value / sigma) : 0.0f; }
+
 protected:
     Mat         norm2(const Mat& image);
     void        dumpDetail();
     void        dumpResult();
+    void        dumpValues();
 
 private:
         string  _label;
@@ -67,7 +75,9 @@ const   Mat&    _image;
         Stats   _stats;
         Detail  _detail;
         Result  _result;
-        Sample  _scanThreshold;
+//        float   _noiseLevel;
+        float   _noiseSigma;
+        Sample  _scanThresholdLevel;
 };
 
 #endif // IMAGESTATS_H

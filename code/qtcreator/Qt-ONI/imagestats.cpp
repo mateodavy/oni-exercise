@@ -9,7 +9,9 @@ ImageStats::ImageStats(const Mat& image, const string label) :
     _label(label),
     _image(image),
     _histo(HISTO_SIZE),
-    _scanThreshold(SCAN_THRESHOLD_DEFAULT)
+//      _noiseLevel(IMAGE_NOISE_LEVEL_DEFAULT)
+    _noiseSigma(IMAGE_NOISE_SIGMA_DEFAULT),
+    _scanThresholdLevel(SCAN_THRESHOLD_DEFAULT)
 {
 
 }
@@ -53,6 +55,8 @@ void ImageStats::stat()
 Mat ImageStats::norm(const Mat& image)
 {
     // build float image and compute image histo/stats
+    // note that dymanic range of result is 768, i.e. almost 10 bits
+    // might want to call this differently
     Mat result(image.rows, image.cols, CV_32FC1, 0.0);
     float valueScale = 1.0f / (3.0f * 255.0f);
     float lumaMax = 0;
@@ -72,7 +76,7 @@ Mat ImageStats::norm(const Mat& image)
     }
 
 #if 1
-    // normalize image
+    // normalize image (optional or separate process?)
 //    fprintf(stdout, "lm: %f\n", lumaMax);
     if (lumaMax > 0)
     {
@@ -205,7 +209,7 @@ void ImageStats::scan()
             {
                 Detail detail = getDetail(x, y);
                 float value = detail.values.at<float>(KERNEL_SIZE, KERNEL_SIZE);
-                if (value > _scanThreshold)
+                if (value > _scanThresholdLevel)
                 {
                     // try to add point
                     CvRect rect;
@@ -235,14 +239,33 @@ void ImageStats::scan()
 #endif
 }
 
+//#define DUMP_IMAGE_INFO
+//#define DUMP_CURSOR_DETAIL
+//#define DUMP_CURSOR_RESULT
+#define DUMP_CURSOR_VALUES
+
 void ImageStats::dump()
 {
+#ifdef DUMP_IMAGE_INFO
     // dump
     fprintf(stderr, "ImageStats::dump: [%s]\n", _label.c_str());
     fprintf(stderr, "\tdim  : %dx%d\n", _image.cols, _image.rows);
     fprintf(stderr, "\tmin  : %f\n", _stats.min);
     fprintf(stderr, "\tmax  : %f\n", _stats.max);
     fprintf(stderr, "\thisto: %d\n", _histo.size());
+#endif
+
+#ifdef DUMP_CURSOR_DETAIL
+    dumpDetail();
+#endif
+
+#ifdef DUMP_CURSOR_RESULT
+    dumpResult();
+#endif
+
+#ifdef DUMP_CURSOR_VALUES
+    dumpValues();
+#endif
 }
 
 void ImageStats::clear()
@@ -252,8 +275,8 @@ void ImageStats::clear()
 
 ImageStats::Detail ImageStats::getDetail(int x, int y)
 {
-    _detail.mouse.x = x;
-    _detail.mouse.y = y;
+    _detail.cursor.x = x;
+    _detail.cursor.y = y;
 
 //    fprintf(stderr, "ImageStats::getDetail: type: %d\n", _image.type());
 
@@ -281,7 +304,8 @@ ImageStats::Detail ImageStats::getDetail(int x, int y)
 
     // many ways to do this...
     // use CvDot (dot product)
-    // or
+    // or Reduce (or Blur box)
+    // or ...
 
     for (int y = 0; y < (_detail.values.rows - 1); y++)
     {
@@ -311,14 +335,42 @@ ImageStats::Detail ImageStats::getDetail(int x, int y)
     return _detail;
 }
 
-//void ImageStats::setThreshold(int x, int y)
-void ImageStats::setThreshold()
+void ImageStats::setThresholdLevel()
 {
-//    Detail detail = getDetail(x, y);
-//    float value = detail.values.at<float>(KERNEL_SIZE, KERNEL_SIZE);
-    float value = _detail.values.at<float>(KERNEL_SIZE, KERNEL_SIZE);
-    qDebug() << "ImageStats::setThreshold: value: " << value;
-    _scanThreshold = value;
+    float value = _detail.meanValue();
+    qDebug() << "ImageStats::setThresholdLevel: value: " << value;
+    _scanThresholdLevel = value;
+}
+
+void ImageStats::setNoiseLevel()
+{
+    // compute standard dev
+    float mean = _detail.meanValue();
+    float diff = 0.0f;
+    for (int y = 0; y < (_detail.values.rows - 1); y++)
+    {
+        _detail.values.at<float>(y, KERNEL_SIZE) = 0.0f;
+        for (int x = 0; x < (_detail.values.cols - 1); x++)
+        {
+            float value = (_detail.values.at<float>(y, x) - mean);
+            diff += value * value;
+        }
+    }
+
+#define USE_STD_DEV
+#ifdef USE_STD_DEV
+    int count = KERNEL_SIZE * KERNEL_SIZE;
+    _noiseSigma = sqrtf(diff / float(count - 1));   // corrected
+//    _noiseSigma = sqrtf(diff / float(count));     // not corrected
+#else
+    _noiseSigma = mean;
+#endif
+
+#ifdef DEBUG
+    qDebug() << "ImageStats::setNoiseLevel: diff : " << diff;
+    qDebug() << "ImageStats::setNoiseLevel: mean : " << mean;
+    qDebug() << "ImageStats::setNoiseLevel: sigma: " << _noiseSigma;
+#endif
 }
 
 bool ImageStats::isValidPos(int x, int y)
@@ -343,7 +395,6 @@ bool ImageStats::isFreePos(int x, int y)
     return true;
 }
 
-
 CvRect ImageStats::getRectXY(int x, int y)
 {
     int ks1 =  KERNEL_SIZE;
@@ -358,7 +409,7 @@ CvRect ImageStats::getRectXY(int x, int y)
 
 void ImageStats::dumpDetail()
 {
-    fprintf(stdout, "\tmouse  : %d,%d\n", _detail.mouse.x, _detail.mouse.y);
+    fprintf(stdout, "\tmouse  : %d,%d\n", _detail.cursor.x, _detail.cursor.y);
     fprintf(stdout, "\tdetail : %dx%d\n", _detail.values.cols, _detail.values.rows);
 
     fprintf(stdout, "      ");
@@ -379,7 +430,7 @@ void ImageStats::dumpDetail()
 
 void ImageStats::dumpResult()
 {
-    fprintf(stdout, "result: threshold: %.3f -> %lu items\n", _scanThreshold, _result.size());
+    fprintf(stdout, "result: threshold: %.3f -> %d items\n", _scanThresholdLevel, _result.size());
     int count = 0;
     for (CvRect item : _result)
     {
@@ -389,3 +440,16 @@ void ImageStats::dumpResult()
         count++;
     }
 }
+
+void ImageStats::dumpValues()
+{
+    fprintf(stdout, "values: peak: %.3f: mean: %.3f: sigma: %.3f: SNR1: %.2f dB: SNR2: %.2f dB\n",
+        _detail.peakValue(),
+        _detail.meanValue(),
+        _noiseSigma,
+        getSNRdB(_detail.peakValue()),
+        getSNRdB(_detail.meanValue())
+    );
+}
+
+
